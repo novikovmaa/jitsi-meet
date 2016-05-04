@@ -221,7 +221,7 @@ var config = {
 };
 ```
 
-## 7. Install depencies 
+## 7. Install dependencies 
 
 ```
 sudo chown -R $(whoami) /srv/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
@@ -237,7 +237,7 @@ sudo invoke-rc.d nginx restart
 sudo prosodyctl restart
 ```
 
-## 9. Reboot system and chekc services availability
+## 9. Reboot system and check services availability
 ```
 sudo reboot
 ```
