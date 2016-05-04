@@ -1,85 +1,72 @@
-# Server Installation for Jitsi Meet
+# Manual Installation
 
-This describes configuring a server `jitsi.example.com` running Debian or a Debian Derivative. You will need to
-change references to that to match your host, and generate some passwords for
-`YOURSECRET1`, `YOURSECRET2`, `YOURSECRET3` and `YOURSECRET4`.
-
-There are also some complete [example config files](https://github.com/jitsi/jitsi-meet/tree/master/doc/example-config-files/) available, mentioned in each section.
-
-## Install prosody
-```sh
-apt-get install prosody
+## 1. Install Prosody
+```
+sudo apt-get update
+sudo apt-get install prosody
 ```
 
-## Configure prosody
-Add config file in `/etc/prosody/conf.avail/jitsi.example.com.cfg.lua` :
-
-- add your domain virtual host section:
-
+## 1.1 Update prosody config
 ```
-VirtualHost "jitsi.example.com"
+cd /etc/prosody/conf.avail
+sudo vi /etc/prosody/conf.avail/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com.cfg.lua
+```
+###### Add this lines to config
+```
+VirtualHost "ec2-52-51-12-4.eu-west-1.compute.amazonaws.com"
     authentication = "anonymous"
     ssl = {
-        key = "/var/lib/prosody/jitsi.example.com.key";
-        certificate = "/var/lib/prosody/jitsi.example.com.crt";
+        key = "/var/lib/prosody/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com.key";
+        certificate = "/var/lib/prosody/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com.crt";
     }
     modules_enabled = {
         "bosh";
         "pubsub";
     }
-```
-- add domain with authentication for conference focus user:
-```
-VirtualHost "auth.jitsi.example.com"
+
+VirtualHost "auth.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com"
     authentication = "internal_plain"
-```
-- add focus user to server admins:
-```
-admins = { "focus@auth.jitsi.example.com" }
-```
-- and finally configure components:
-```
-Component "conference.jitsi.example.com" "muc"
-Component "jitsi-videobridge.jitsi.example.com"
+
+admins = { "focus@auth.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com" }
+
+Component "conference.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com" "muc"
+Component "jitsi-videobridge.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com"
     component_secret = "YOURSECRET1"
-Component "focus.jitsi.example.com"
+Component "focus.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com"
     component_secret = "YOURSECRET2"
 ```
 
-Add link for the added configuration
-```sh
-ln -s /etc/prosody/conf.avail/jitsi.example.com.cfg.lua /etc/prosody/conf.d/jitsi.example.com.cfg.lua
+## 2. Add link to this config and generate self-signed certificates
+
+```
+sudo ln -s /etc/prosody/conf.avail/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com.cfg.lua /etc/prosody/conf.d/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com.cfg.lua
+sudo prosodyctl cert generate ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
+sudo prosodyctl register focus auth.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com YOURSECRET3
+sudo prosodyctl stop
 ```
 
-Generate certs for the domain:
-```sh
-prosodyctl cert generate jitsi.example.com
+## 3. Install nginx
+
+```
+sudo apt-get install nginx
+sudo apt-get install git
+cd /etc/nginx/sites-available
+sudo vi ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
 ```
 
-Create conference focus user:
-```sh
-prosodyctl register focus auth.jitsi.example.com YOURSECRET3
-```
+## 3.1 Update nginx config with this lines
 
-Restart prosody XMPP server with the new config
-```sh
-prosodyctl restart
-```
-
-## Install nginx
-```sh
-apt-get install nginx
-```
-
-Add a new file `jitsi.example.com` in `/etc/nginx/sites-available` (see also the example config file):
 ```
 server_names_hash_bucket_size 64;
 
 server {
     listen 80;
-    server_name jitsi.example.com;
+    listen 443 ssl;
+    ssl_certificate /var/lib/prosody/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com.crt;
+    ssl_certificate_key /var/lib/prosody/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com.key;
+    server_name ec2-52-51-12-4.eu-west-1.compute.amazonaws.com;
     # set the root
-    root /srv/jitsi.example.com;
+    root /srv/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com;
     index index.html;
     location ~ ^/([a-zA-Z0-9=\?]+)$ {
         rewrite ^/(.*)$ / break;
@@ -94,132 +81,163 @@ server {
         proxy_set_header Host $http_host;
     }
 }
-```
 
-Add link for the added configuration
-```sh
 cd /etc/nginx/sites-enabled
-ln -s ../sites-available/jitsi.example.com jitsi.example.com
+sudo ln -s ../sites-available/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
 ```
 
-## Install Jitsi Videobridge
-```sh
-wget https://download.jitsi.org/jitsi-videobridge/linux/jitsi-videobridge-linux-{arch-buildnum}.zip
-unzip jitsi-videobridge-linux-{arch-buildnum}.zip
-```
+## 4. Install videobridge
 
-Install JRE if missing:
 ```
-apt-get install default-jre
+cd ~
+wget https://download.jitsi.org/jitsi-videobridge/linux/jitsi-videobridge-linux-x86-728.zip
+sudo apt-get install unzip
+unzip jitsi-videobridge-linux-x86-728.zip
+sudo apt-get install default-jdk
+mkdir ~/.sip-communicator
+cd ~/.sip-communicator/
 ```
-
-_NOTE: When installing on older Debian releases keep in mind that you need JRE >= 1.7._
-
-In the user home that will be starting Jitsi Videobridge create `.sip-communicator` folder and add the file `sip-communicator.properties` with one line in it:
+## 4.1 Add config to sip-communicator file
+```
+vi sip-communicator.properties
+```
+Add this line:
 ```
 org.jitsi.impl.neomedia.transform.srtp.SRTPCryptoContext.checkReplay=false
 ```
 
-Start the videobridge with:
-```sh
-./jvb.sh --host=localhost --domain=jitsi.example.com --port=5347 --secret=YOURSECRET1 &
-```
-Or autostart it by adding the line in `/etc/rc.local`:
-```sh
-/bin/bash /root/jitsi-videobridge-linux-{arch-buildnum}/jvb.sh --host=localhost --domain=jitsi.example.com --port=5347 --secret=YOURSECRET1 </dev/null >> /var/log/jvb.log 2>&1
-```
+## 5. Install jicofo
 
-## Install Jitsi Conference Focus (jicofo)
-
-Install JDK and Ant if missing:
 ```
-apt-get install default-jdk ant
-```
-
-_NOTE: When installing on older Debian releases keep in mind that you need JDK >= 1.7._
-
-Clone source from Github repo:
-```sh
+cd ~
 git clone https://github.com/jitsi/jicofo.git
-```
-Build distribution package. Replace {os-name} with one of: 'lin', 'lin64', 'macosx', 'win', 'win64'.
-```sh
-cd jicofo
-ant dist.{os-name}
-```
-Run jicofo:
-```sh
-cd dist/{os-name}'
-./jicofo.sh --domain=jitsi.example.com --secret=YOURSECRET2 --user_domain=auth.jitsi.example.com --user_name=focus --user_password=YOURSECRET3
+sudo apt-get install maven
+mvn dependency:get -DartifactId=maven-ant-tasks -DgroupId=org.apache.maven -Dversion=2.1.3 -DrepoUrl=http://repo1.maven.org/maven2
+mvn package -DskipTests -Dassembly.skipAssembly=false
+/home/ubuntu/jicofo/target
+unzip jicofo-linux-x64-1.0-SNAPSHOT.zip
 ```
 
-## Deploy Jitsi Meet
-Checkout and configure Jitsi Meet:
-```sh
-cd /srv
-git clone https://github.com/jitsi/jitsi-meet.git
-mv jitsi-meet/ jitsi.example.com
+###### Edit rc.local to autostart service jvb
+```
+sudo vi /etc/rc.local
+
+/bin/bash /home/ubuntu/jitsi-videobridge-linux-x86-728/jvb.sh --host=localhost --domain=ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --port=5347 --secret=YOURSECRET1 </dev/null >> /var/log/jvb.log 2>&1
+/bin/bash /home/ubuntu/jicofo/target/jicofo-linux-x64-1.0-SNAPSHOT/jicofo.sh --host=localhost --domain=ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --secret=YOURSECRET2 --user_domain=auth.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --user_name=focus --user_password=YOURSECRET3  </dev/null>
 ```
 
-Edit host names in `/srv/jitsi.example.com/config.js` (see also the example config file):
 ```
+sudo reboot
+```
+
+## 6. Deploy JitsiMeet
+
+```
+cd /srv/
+sudo git clone https://github.com/jitsi/jitsi-meet.git
+mv jitsi-meet/ ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
+cd ec2-52-51-12-4.eu-west-1.compute.amazonaws.com/
+```
+
+## 6.1 Update jitsi meet config with lines below
+```
+sudo vi ./config.js
+```
+
+```
+/* jshint -W101 */
 var config = {
+//    configLocation: './config.json', // see ./modules/HttpConfigFetch.js
     hosts: {
-        domain: 'jitsi.example.com',
-        muc: 'conference.jitsi.example.com',
-        bridge: 'jitsi-videobridge.jitsi.example.com'
+        domain: 'ec2-52-51-12-4.eu-west-1.compute.amazonaws.com',
+        //anonymousdomain: 'guest.example.com',
+        //authdomain: 'jitsi-meet.example.com',  // defaults to <domain>
+        muc: 'conference.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com', // FIXME: use XEP-0030
+        bridge: 'jitsi-videobridge.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com', // FIXME: use XEP-0030
+        //jirecon: 'jirecon.jitsi-meet.example.com',
+        //call_control: 'callcontrol.jitsi-meet.example.com',
+        //focus: 'focus.jitsi-meet.example.com', // defaults to 'focus.jitsi-meet.example.com'
     },
+//  getroomnode: function (path) { return 'someprefixpossiblybasedonpath'; },
+//  useStunTurn: true, // use XEP-0215 to fetch STUN and TURN server
+//  useIPv6: true, // ipv6 support. use at your own risk
     useNicks: false,
-    bosh: '//jitsi.example.com/http-bind', // FIXME: use xep-0156 for that
-    desktopSharing: 'false' // Desktop sharing method. Can be set to 'ext', 'webrtc' or false to disable.
-    //chromeExtensionId: 'diibjkoicjeejcmhdnailmkgecihlobk', // Id of desktop streamer Chrome extension
-    //minChromeExtVersion: '0.1' // Required version of Chrome extension
+    bosh: '//ec2-52-51-12-4.eu-west-1.compute.amazonaws.com/http-bind', // FIXME: use xep-0156 for that
+    clientNode: 'http://jitsi.org/jitsimeet', // The name of client node advertised in XEP-0115 'c' stanza
+    //focusUserJid: 'focus@auth.jitsi-meet.example.com', // The real JID of focus participant - can be overridden here
+    //defaultSipNumber: '', // Default SIP number
+
+    // Desktop sharing method. Can be set to 'ext', 'webrtc' or false to disable.
+    desktopSharingChromeMethod: 'ext',
+    // The ID of the jidesha extension for Chrome.
+    desktopSharingChromeExtId: 'diibjkoicjeejcmhdnailmkgecihlobk',
+    // The media sources to use when using screen sharing with the Chrome
+    // extension.
+    desktopSharingChromeSources: ['screen', 'window'],
+    // Required version of Chrome extension
+    desktopSharingChromeMinExtVersion: '0.1',
+
+    // The ID of the jidesha extension for Firefox. If null, we assume that no
+    // extension is required.
+    desktopSharingFirefoxExtId: null,
+    // Whether desktop sharing should be disabled on Firefox.
+    desktopSharingFirefoxDisabled: true,
+    // The maximum version of Firefox which requires a jidesha extension.
+    // Example: if set to 41, we will require the extension for Firefox versions
+    // up to and including 41. On Firefox 42 and higher, we will run without the
+    // extension.
+    // If set to -1, an extension will be required for all versions of Firefox.
+    desktopSharingFirefoxMaxVersionExtRequired: -1,
+    // The URL to the Firefox extension for desktop sharing.
+    desktopSharingFirefoxExtensionURL: null,
+
+    // Disables ICE/UDP by filtering out local and remote UDP candidates in signalling.
+    webrtcIceUdpDisable: false,
+    // Disables ICE/TCP by filtering out local and remote TCP candidates in signalling.
+    webrtcIceTcpDisable: false,
+
+    openSctp: true, // Toggle to enable/disable SCTP channels
+    disableStats: false,
+    disableAudioLevels: false,
+    channelLastN: -1, // The default value of the channel attribute last-n.
+    adaptiveLastN: false,
+    //disableAdaptiveSimulcast: false,
+    enableRecording: false,
+    enableWelcomePage: true,
+    disableSimulcast: false,
+    logStats: false, // Enable logging of PeerConnection stats via the focus
+//    requireDisplayName: true, // Forces the participants that doesn't have display name to enter it when they enter the room.
+//    startAudioMuted: 10, // every participant after the Nth will start audio muted
+//    startVideoMuted: 10, // every participant after the Nth will start video muted
+//    defaultLanguage: "en",
+// To enable sending statistics to callstats.io you should provide Applicaiton ID and Secret.
+//    callStatsID: "", // Application ID for callstats.io API
+//    callStatsSecret: "", // Secret for callstats.io API
+    /*noticeMessage: 'Service update is scheduled for 16th March 2015. ' +
+    'During that time service will not be available. ' +
+    'Apologise for inconvenience.',*/
+    disableThirdPartyRequests: false,
+    minHDHeight: 540
 };
 ```
 
-Restart nginx to get the new configuration:
-```sh
-invoke-rc.d nginx restart
+## 7. Install depencies 
+
+```
+sudo chown -R $(whoami) /srv/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
+cd /srv/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
+sudo npm install
+sudo make
 ```
 
-## Running behind NAT
-Jitsi-Videobridge can run behind a NAT, provided that all required ports are routed (forwarded) to the machine that it runs on. By default these ports are (TCP/443 or TCP/4443 and UDP 10000-20000).
+## 8. Restart services
 
-The following extra lines need to be added the file `~/.sip-communicator/sip-communicator.properties` (in the home directory of the user running the videobridge):
 ```
-org.jitsi.videobridge.NAT_HARVESTER_LOCAL_ADDRESS=<Local.IP.Address>
-org.jitsi.videobridge.NAT_HARVESTER_PUBLIC_ADDRESS=<Public.IP.Address>
+sudo invoke-rc.d nginx restart
+sudo prosodyctl restart
 ```
 
-So the file should look like this at the end:
+## 9. Reboot system and chekc services availability
 ```
-org.jitsi.impl.neomedia.transform.srtp.SRTPCryptoContext.checkReplay=false
-org.jitsi.videobridge.NAT_HARVESTER_LOCAL_ADDRESS=<Local.IP.Address>
-org.jitsi.videobridge.NAT_HARVESTER_PUBLIC_ADDRESS=<Public.IP.Address>
+sudo reboot
 ```
-
-# Hold your first conference
-You are now all set and ready to have your first meet by going to http://jitsi.example.com
-
-
-## Enabling recording
-Currently recording is only supported for linux-64 and macos. To enable it, add
-the following properties to sip-communicator.properties:
-```
-org.jitsi.videobridge.ENABLE_MEDIA_RECORDING=true
-org.jitsi.videobridge.MEDIA_RECORDING_PATH=/path/to/recordings/dir
-org.jitsi.videobridge.MEDIA_RECORDING_TOKEN=secret
-```
-
-where /path/to/recordings/dir is the path to a pre-existing directory where recordings
-will be stored (needs to be writeable by the user running jitsi-videobridge),
-and "secret" is a string which will be used for authentication.
-
-Then, edit the Jitsi-Meet config.js file and set:
-```
-enableRecording: true
-```
-
-Restart jitsi-videobridge and start a new conference (making sure that the page
-is reloaded with the new config.js) -- the organizer of the conference should
-now have a "recording" button in the floating menu, near the "mute" button.
