@@ -81,7 +81,9 @@ server {
         proxy_set_header Host $http_host;
     }
 }
-
+```
+###### Add nginx config to sites-enabled directory
+```
 cd /etc/nginx/sites-enabled
 sudo ln -s ../sites-available/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
 ```
@@ -119,11 +121,31 @@ unzip jicofo-linux-x64-1.0-SNAPSHOT.zip
 ```
 
 ###### Edit rc.local to autostart service jvb
+Replace content of this file:
 ```
 sudo vi /etc/rc.local
+```
 
-/bin/bash /home/ubuntu/jitsi-videobridge-linux-x86-728/jvb.sh --host=localhost --domain=ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --port=5347 --secret=YOURSECRET1 </dev/null >> /var/log/jvb.log 2>&1
-/bin/bash /home/ubuntu/jicofo/target/jicofo-linux-x64-1.0-SNAPSHOT/jicofo.sh --host=localhost --domain=ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --secret=YOURSECRET2 --user_domain=auth.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --user_name=focus --user_password=YOURSECRET3  </dev/null>
+With this lines:
+```
+#!/bin/sh
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+screen -d -m bin/bash /home/ubuntu/jitsi-videobridge-linux-x86-728/jvb.sh --host=localhost --domain=ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --port=5347 --secret=YOURSECRET1 </dev/null >> /var/log/jvb.log 2>&1 12346
+screen -d -m bin/bash /home/ubuntu/jicofo/target/jicofo-linux-x64-1.0-SNAPSHOT/jicofo.sh --host=localhost --domain=ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --secret=YOURSECRET2 --user_domain=auth.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com --user_name=focus --user_password=YOURSECRET3 </dev/null >> /var/log/jicofo.log 2>&1 12345
+
+exit 0
+
 ```
 
 ```
@@ -170,7 +192,7 @@ var config = {
     // Desktop sharing method. Can be set to 'ext', 'webrtc' or false to disable.
     desktopSharingChromeMethod: 'ext',
     // The ID of the jidesha extension for Chrome.
-    desktopSharingChromeExtId: 'diibjkoicjeejcmhdnailmkgecihlobk',
+    desktopSharingChromeExtId: 'gimieicaihchnefkllolcmigancdlclc',
     // The media sources to use when using screen sharing with the Chrome
     // extension.
     desktopSharingChromeSources: ['screen', 'window'],
@@ -226,6 +248,9 @@ var config = {
 ```
 sudo chown -R $(whoami) /srv/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
 cd /srv/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
+sudo apt-get install nodejs
+sudo apt-get install npm
+sudo ln -s /usr/bin/nodejs /usr/bin/node
 sudo npm install
 sudo make
 ```
