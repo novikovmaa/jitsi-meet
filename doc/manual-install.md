@@ -251,6 +251,7 @@ cd /srv/ec2-52-51-12-4.eu-west-1.compute.amazonaws.com
 sudo apt-get install nodejs
 sudo apt-get install npm
 sudo ln -s /usr/bin/nodejs /usr/bin/node
+sudo npm -g install npm@next
 sudo npm install
 sudo make
 ```
