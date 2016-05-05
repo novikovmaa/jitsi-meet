@@ -2,6 +2,7 @@
   "name": "jitsi-meet",
   "version": "0.0.0",
   "description": "A sample app for the Jitsi Videobridge",
+  "main": "main.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/jitsi/jitsi-meet"
@@ -41,12 +42,14 @@
     "clean-css": "*",
     "babelify": "*",
     "babel-preset-es2015": "*",
-    "babel-polyfill": "*"
+    "babel-polyfill": "*",
+    "electron-prebuilt": "^0.37.8"
   },
   "license": "Apache-2.0",
   "scripts": {
     "lint": "./node_modules/.bin/jshint .",
-    "validate": "npm ls"
+    "validate": "npm ls",
+    "start": "electron main.js"
   },
   "pre-commit": [
     "lint"
