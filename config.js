@@ -2,26 +2,26 @@
 var config = {
 //    configLocation: './config.json', // see ./modules/HttpConfigFetch.js
     hosts: {
-        domain: 'jitsi-meet.example.com',
+        domain: 'ec2-52-51-12-4.eu-west-1.compute.amazonaws.com',
         //anonymousdomain: 'guest.example.com',
-        //authdomain: 'jitsi-meet.example.com',  // defaults to <domain>
-        muc: 'conference.jitsi-meet.example.com', // FIXME: use XEP-0030
-        bridge: 'jitsi-videobridge.jitsi-meet.example.com', // FIXME: use XEP-0030
-        //jirecon: 'jirecon.jitsi-meet.example.com',
-        //call_control: 'callcontrol.jitsi-meet.example.com',
-        //focus: 'focus.jitsi-meet.example.com', // defaults to 'focus.jitsi-meet.example.com'
+        //authdomain: 'ec2-52-51-12-4.eu-west-1.compute.amazonaws.com',  // defaults to <domain>
+        muc: 'conference.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com', // FIXME: use XEP-0030
+        bridge: 'jitsi-videobridge.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com', // FIXME: use XEP-0030
+        //jirecon: 'jirecon.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com',
+        //call_control: 'callcontrol.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com',
+        //focus: 'focus.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com', // defaults to 'focus.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com'
     },
 //  getroomnode: function (path) { return 'someprefixpossiblybasedonpath'; },
 //  useStunTurn: true, // use XEP-0215 to fetch STUN and TURN server
 //  useIPv6: true, // ipv6 support. use at your own risk
     useNicks: false,
-    bosh: '//jitsi-meet.example.com/http-bind', // FIXME: use xep-0156 for that
+    bosh: 'https://ec2-52-51-12-4.eu-west-1.compute.amazonaws.com/http-bind', // FIXME: use xep-0156 for that
     clientNode: 'http://jitsi.org/jitsimeet', // The name of client node advertised in XEP-0115 'c' stanza
-    //focusUserJid: 'focus@auth.jitsi-meet.example.com', // The real JID of focus participant - can be overridden here
+    focusUserJid: 'focus@auth.ec2-52-51-12-4.eu-west-1.compute.amazonaws.com', // The real JID of focus participant - can be overridden here
     //defaultSipNumber: '', // Default SIP number
 
     // Desktop sharing method. Can be set to 'ext', 'webrtc' or false to disable.
-    desktopSharingChromeMethod: 'ext',
+    desktopSharingChromeMethod: 'webrtc',
     // The ID of the jidesha extension for Chrome.
     desktopSharingChromeExtId: 'diibjkoicjeejcmhdnailmkgecihlobk',
     // The media sources to use when using screen sharing with the Chrome
