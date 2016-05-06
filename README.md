@@ -1,4 +1,4 @@
-# Manual Installation
+# Manual Server Installation
 
 ## 1. Install Prosody
 ```
