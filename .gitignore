@@ -7,3 +7,5 @@ deploy-local.sh
 libs/external_connect.js
 all.css
 .remote-sync.json
+demio-lib-jitsi-electron-app/libs
+demio-lib-jitsi-electron-app/node_modules
