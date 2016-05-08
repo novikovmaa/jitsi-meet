@@ -1,5 +1,10 @@
 /* jshint -W101 */
-const DEFAULT_ROOM = 'demioexample';
+const DEFAULT_ROOM = 'demioexample99';
+
+
+var CONF_OPTIONS = {
+    openSctp: true
+}
 
 var SERVER = 'ec2-52-51-12-4.eu-west-1.compute.amazonaws.com';
 var CONFIG = {
