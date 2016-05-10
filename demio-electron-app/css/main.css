@@ -21,3 +21,10 @@ html, body {
 #wait-screen h1 {
 	padding: 20px;
 }
+
+#localVideoCamera {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 200px;
+}
