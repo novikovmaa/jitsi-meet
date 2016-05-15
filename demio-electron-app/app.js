@@ -231,7 +231,7 @@ function chooseServer() {
     var fs = require('fs');
     fs.exists(p, function(exists) {
       if (exists) {
-        SERVER = '78.46.59.71'
+        SERVER = '147.75.194.19'//'78.46.59.71'
       } else {
         SERVER = 'ec2-52-51-12-4.eu-west-1.compute.amazonaws.com';
       }
